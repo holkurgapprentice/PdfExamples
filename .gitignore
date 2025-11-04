@@ -1,0 +1,64 @@
+# ---- OS / Editor ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# ---- Visual Studio / Rider ----
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+_ReSharper*/
+[Rr]e[Ss]harper*/
+
+# ---- Build outputs ----
+[Bb]in/
+[Oo]bj/
+[Bb]uild/
+[Bb]ld/
+out/
+app.publish/
+[Dd]ebug/
+[Rr]elease/
+[Rr]elease*/
+[Dd]ebug*/
+x64/
+x86/
+
+# ---- Test results / coverage ----
+TestResults/
+*.coverage
+*.coveragexml
+coverage*/
+
+# ---- Packages / NuGet ----
+packages/
+*.nupkg
+*.snupkg
+*.nuspec
+project.lock.json
+artifacts/
+
+# ---- Logs / caches ----
+logs/
+*.log
+*.pidb
+*.svclog
+*.scc
+*.cache
+*.opendb
+
+# ---- User-specific project files ----
+*.csproj.user
+*.vbproj.user
+*.props.user
+*.targets.user
+
+# ---- Misc tooling ----
+.terraform*
+node_modules/
+
+

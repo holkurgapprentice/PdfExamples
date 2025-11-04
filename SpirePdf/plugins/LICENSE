@@ -1,0 +1,11 @@
+Qt under any of the following licenses: LGPL version 3, GPL version 2 and GPL version 3.
+
+Basic Premises of the Qt Open Source Model
+
+GPL – All users have the rights to obtain, modify and redistribute the full source code of your application. 
+Your users are granted rights founded on the four freedoms of the GNU General Public License.
+https://www.gnu.org/licenses/quick-guide-gplv3.en.html
+
+LGPL – Any modification to a Qt component covered by the GNU Lesser General Public License must be
+contributed back to the community. This is the primary open source Qt license, which covers the majority of Qt modules.
+https://www.gnu.org/licenses/lgpl-3.0.en.html
