@@ -3,27 +3,50 @@
 This document evaluates four approaches to HTML→PDF in .NET and provides a clear Go/No‑Go decision for each, including containerization/server caveats and a recommended solution.
 
 ## Contents
-- Scope and goals
-- Evaluation criteria
-- Executive summary (Go/No‑Go)
-- Detailed findings by approach
-  - PuppeteerSharp (Chromium)
-  - NReco (wkhtmltopdf wrapper)
-  - DinkToPdf (wkhtmltopdf wrapper)
-  - SelectPdf (proprietary engine)
-  - IronPDF (Chromium-based, commercial)
-  - Syncfusion.HtmlToPdfConverter (Blink-based, commercial)
-  - Spire.PDF (HTML→PDF NO‑GO; PDF API only)
-- Suggested solution ⇒ PuppeteerSharp
-- Performance snapshot
-  - Single run
-  - 10 instances run
-  - 100 instances run
-  - 10 pdfs at one run
-  - 100 pdfs at one run
-  - Performance summary
-- Appendix: Feature comparison
-- How to run locally
+- [PDF Generation in .NET — Technical Evaluation and Go/No‑Go (Nov 2025)](#pdf-generation-in-net--technical-evaluation-and-gono-go-nov-2025)
+- [Scope and goals](#scope-and-goals)
+- [Evaluation criteria](#evaluation-criteria)
+- [HTML-to-PDF Libraries Overview](#html-to-pdf-libraries-overview)
+  - [Tested Libraries](#tested-libraries)
+  - [Not Tested](#not-tested)
+- [Executive summary (Go/No‑Go)](#executive-summary-gono-go)
+  - [Quick status matrix](#quick-status-matrix)
+- [Per project summary](#per-project-summary)
+  - [PuppeteerSharp (Chromium) — GO (Recommended)](#puppeteersharp-chromium--go-recommended)
+  - [NReco (wkhtmltopdf wrapper) — CONDITIONAL GO](#nreco-wkhtmltopdf-wrapper--conditional-go)
+  - [DinkToPdf (wkhtmltopdf wrapper) — NO‑GO (for containerized Linux without extra native care)](#dinktopdf-wkhtmltopdf-wrapper--no-go-for-containerized-linux-without-extra-native-care)
+  - [SelectPdf (proprietary engine) — GO (Licensed) / NO‑GO (Community)](#selectpdf-proprietary-engine--go-licensed--no-go-community)
+  - [IronPDF (Chromium-based) — CONDITIONAL GO (Licensed)](#ironpdf-chromium-based--conditional-go-licensed)
+  - [Syncfusion.HtmlToPdfConverter (Blink-based) — CONDITIONAL GO (Licensed)](#syncfusionhtmltopdfconverter-blink-based--conditional-go-licensed)
+  - [Spire.PDF — NO‑GO for HTML→PDF](#spirepdf--no-go-for-htmltopdf)
+  - [Suggested solution ⇒ PuppeteerSharp](#suggested-solution--puppeteersharp)
+  - [Notes](#notes)
+- [Performance snapshot (from test runs in dev environment)](#performance-snapshot-from-test-runs-in-dev-environment)
+  - [Single run](#single-run)
+  - [10 instances run](#10-instances-run)
+  - [100 instances run](#100-instances-run)
+  - [10 pdfs at one run](#10-pdfs-at-one-run)
+  - [100 pdfs at one run](#100-pdfs-at-one-run)
+  - [Performance summary](#performance-summary)
+    - [Single Run (1 PDF)](#single-run-1-pdf)
+    - [10 Instances Run (10 PDFs in parallel)](#10-instances-run-10-pdfs-in-parallel)
+    - [100 Instances Run (100 PDFs in parallel)](#100-instances-run-100-pdfs-in-parallel)
+    - [10 PDFs at One Run (10 PDFs sequentially in a single process)](#10-pdfs-at-one-run-10-pdfs-sequentially-in-a-single-process)
+    - [100 PDFs at One Run (100 PDFs sequentially in a single process)](#100-pdfs-at-one-run-100-pdfs-sequentially-in-a-single-process)
+    - [Overall Takeaways](#overall-takeaways)
+- [Appendix: Feature comparison (high-level)](#appendix-feature-comparison-high-level)
+- [Licensing Summary](#licensing-summary)
+- [HTML flavor comparison (class vs inline)](#html-flavor-comparison-class-vs-inline)
+- [Visual snapshots](#visual-snapshots)
+  - [Note](#note)
+- [How to run this project locally](#how-to-run-this-project-locally)
+  - [Prerequisites](#prerequisites)
+  - [Scripts overview](#scripts-overview)
+  - [Quick start](#quick-start)
+  - [Build all projects](#build-all-projects)
+  - [Run an individual project](#run-an-individual-project)
+  - [Future Work / Roadmap](#future-work--roadmap)
+  - [Notes](#notes-2)
 
 ---
 
@@ -52,13 +75,13 @@ This section provides a quick reference of all HTML-to-PDF libraries evaluated i
 
 ## Tested Libraries
 
-- **PuppeteerSharp** — Chromium-based headless browser; excellent modern CSS/JS support and rendering fidelity - maintained
-- **NReco.PdfGenerator** — Managed wrapper around wkhtmltopdf; good for static layouts with minimal setup - not maintained 2 years
-- **DinkToPdf** — Community wkhtmltopdf wrapper; requires native library management per OS/architecture - not maintained 8 years
-- **SelectPdf** — Commercial HTML converter with proprietary engine; managed-only, good fidelity but slower JS execution - maintained - 5 months w/o update
-- **IronPDF** — Commercial Chromium-based converter; managed .NET library with high-fidelity rendering and US Letter support - maintained - 1 month w/o update
-- **Spire.PDF** - Modern fluent API for PDF generation; tested but NO GO due to poor HTML sytnax support - maintaned
-- **Syncfusion.HtmlToPdfConverter** — Commercial Blink-based converter; comprehensive .NET PDF library with modern HTML5/CSS3 support - maintained
+- **PuppeteerSharp** — Chromium-based headless browser; excellent modern CSS/JS support and rendering fidelity - Actively Maintained
+- **NReco.PdfGenerator** — Managed wrapper around wkhtmltopdf; good for static layouts with minimal setup - Not Actively Maintained (Last update: 2 years ago)
+- **DinkToPdf** — Community wkhtmltopdf wrapper; requires native library management per OS/architecture - Not Actively Maintained (Last update: 8 years ago)
+- **SelectPdf** — Commercial HTML converter with proprietary engine; managed-only, good fidelity but slower JS execution - Actively Maintained (Last update: 5 months ago)
+- **IronPDF** — Commercial Chromium-based converter; managed .NET library with high-fidelity rendering and US Letter support - Actively Maintained (Last update: 1 month ago)
+- **Spire.PDF** - Modern fluent API for PDF generation; tested but NO GO due to poor HTML syntax support - Actively Maintained
+- **Syncfusion.HtmlToPdfConverter** — Commercial Blink-based converter; comprehensive .NET PDF library with modern HTML5/CSS3 support - Actively Maintained
 
 ## Not Tested
 
@@ -68,6 +91,7 @@ This section provides a quick reference of all HTML-to-PDF libraries evaluated i
 
 # Executive summary (Go/No‑Go)
 
+- **Recommended Solution: PuppeteerSharp (Chromium)** — Offers the best fidelity, aligns with modern browser output, and is battle-tested in server/container environments.
 - PuppeteerSharp (Chromium):
   - High-fidelity, modern-browser rendering with good support for complex layouts and print CSS. Suitable as the primary, long‑term choice for server/container environments when you can accept Chromium setup and footprint.
 - NReco (wkhtmltopdf wrapper):
@@ -99,6 +123,8 @@ This section provides a quick reference of all HTML-to-PDF libraries evaluated i
 Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
 
 ---
+
+# Per project summary
 
 # PuppeteerSharp (Chromium) — GO (Recommended)
 ## What
@@ -351,14 +377,14 @@ Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
 | IronPdf        | 4.719    | 135.73         | 136.02      | 57.62        | 135.73         | 135.73–135.73      |
 | Syncfusion     | 9.789    | 92.19          | 92.19       | 72.12        | 92.19          | 92.19–92.19        |
 | SpirePdf       | 3.216    | 66.68          | 66.68       | 46.44        | 66.68          | 66.68–66.68        |
-## Takeaways
+
+### Takeaways
 - Fastest: DinkToPdf 2.2s while NReco is 2.2s (same)
 - Lowest memory: NReco 21 MB (peak) while DinkToPdf uses 63 MB
 
-## Notes
+### Notes
 - wkhtmltopdf-based tools (DinkToPdf, NReco) and SpirePdf may emit Qt-related console warnings; noisy but generally harmless.
 - PuppeteerSharp may download Chromium on first run; results shown are on a warmed-up machine.
-
 
 ## 10 instances run
 
@@ -368,12 +394,12 @@ Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
 | PuppeteerSharp | 3.246    | 558.95         | 558.95      | 558.95       | 55.90          | 55.90–55.90        |
 | DinkToPdf      | 2.281    | 545.21         | 545.21      | 545.21       | 54.52          | 54.52–54.52        |
 | SelectPdf      | 6.470    | 1129.03        | 1129.03     | 1129.03      | 112.90         | 112.90–112.90      |
-| IronPdfExample | 4.972    | 1357.80        | 1357.80     | 1357.80      | 135.78         | 135.78–135.78      |
+| IronPDF        | 4.972    | 1357.80        | 1357.80     | 1357.80      | 135.78         | 135.78–135.78      |
 | Syncfusion     | 12.838   | 895.49         | 895.49      | 895.49       | 89.55          | 89.55–89.55        |
 | SpirePdf       | 4.864    | 665.06         | 665.06      | 665.06       | 66.51          | 66.51–66.51        |
 
-## Takeaways
-- Fastest: DinkToPdf 2.3s while NReco is 2.4s (same)
+### Takeaways
+- Fastest: DinkToPdf 2.3s (NReco 2.4s)
 - Lowest memory: NReco 213 MB (peak) while DinkToPdf uses 545 MB
 
 ## 100 instances run
@@ -382,14 +408,14 @@ Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
 |----------------|----------|----------------|-------------|--------------|----------------|---------------------|
 | DinkToPdf      |   10.735 |        5475.24 |     6348.11 |      3697.92 |          54.75 |        54.54-55.19 |
 | NReco          |   10.881 |        2177.92 |     2182.15 |       766.80 |          21.78 |        21.15-22.75 |
-| IronPdfExample |   23.433 |       13539.03 |    13541.01 |      5673.96 |         135.39 |      133.40-139.18 |
+| IronPDF        |   23.433 |       13539.03 |    13541.01 |      5673.96 |         135.39 |      133.40-139.18 |
 | SpirePdf       |   25.188 |        6709.32 |     6709.73 |      4675.65 |          67.09 |        66.66-68.31 |
 | SelectPdf      |   29.185 |        9881.77 |    18489.08 |      8017.88 |          98.82 |       84.52-113.79 |
 | PuppeteerSharp |   41.779 |        6187.70 |     6232.58 |      4010.72 |          61.26 |        52.71-64.26 |
 | Syncfusion     |   78.352 |        9069.66 |     9070.04 |      6995.96 |          90.70 |        89.04-92.66 |
 
-## Takeaways
-- Fastest: DinkToPdf 10.7s while NReco is 10.9s (same)
+### Takeaways
+- Fastest: DinkToPdf 10.7s (NReco 10.9s)
 - Lowest memory: NReco 2182 MB (peak) while DinkToPdf uses 6348 MB
 
 ## 10 pdfs at one run
@@ -404,7 +430,7 @@ Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
 | Syncfusion     | 8.7      | 110.31         | 110.31      | 89.77        | 110.31         | 110.31–110.31      |
 | SpirePdf       | 17.5     | 66.84          | 69.82       | 46.14        | 66.84          | 66.84–66.84        |
 
-## Takeaways
+### Takeaways
 - Fastest: PuppeteerSharp 5.9s while NReco is 10.0s (slower)
 - Lowest memory: NReco 26 MB (peak) while PuppeteerSharp uses 91 MB
 
@@ -420,19 +446,42 @@ Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
 | Syncfusion     | 12.9     | 126.11         | 130.58      | 105.52       | 126.11         | 126.11–126.11      |
 | SpirePdf       | 160.916  | 68.96          | 70.41       | 48.22        | 68.96          | 68.96–68.96        |
 
-## Takeaways
+### Takeaways
 - Fastest: Syncfusion 12.9s while NReco is 91.4s (slower)
 - Lowest memory: NReco 29.86 MB while Syncfusion uses 130.58MB
 
 
 ## Performance summary
 
-For use case:
-Thenths of pdfs on signle instance. With up to few instances run on single machine.
+This section provides a consolidated overview of the performance across all test scenarios, highlighting key takeaways for each.
 
-PuppeteerSharp will take arroun 5.9s to complete using 91MB of RAM.
-Thats the fastest completion, while maintaing best css / js / html support.
-Ramwise this is right in the middle between 20MB lowest score and 186MB highest score.
+### Single Run (1 PDF)
+- **Fastest:** DinkToPdf (2.2s) and NReco (2.2s)
+- **Lowest Memory:** NReco (21 MB peak)
+
+### 10 Instances Run (10 PDFs in parallel)
+- **Fastest:** DinkToPdf (2.3s)
+- **Lowest Memory:** NReco (213 MB peak)
+
+### 100 Instances Run (100 PDFs in parallel)
+- **Fastest:** DinkToPdf (10.7s)
+- **Lowest Memory:** NReco (2182 MB peak)
+
+### 10 PDFs at One Run (10 PDFs sequentially in a single process)
+- **Fastest:** PuppeteerSharp (5.9s)
+- **Lowest Memory:** NReco (26 MB peak)
+
+### 100 PDFs at One Run (100 PDFs sequentially in a single process)
+- **Fastest:** Syncfusion (12.9s)
+- **Lowest Memory:** NReco (29.86 MB peak)
+
+### Overall Takeaways
+- **NReco** consistently offers the **lowest memory footprint** across all scenarios, making it suitable for memory-constrained environments, especially for static layouts.
+- **DinkToPdf** is often the **fastest for parallel instance runs** (1, 10, 100 instances), but with higher memory usage than NReco.
+- **PuppeteerSharp** excels in **sequential processing of a moderate number of PDFs** (e.g., 10 PDFs at once), offering the best fidelity.
+- **Syncfusion** shows strong performance for **large burst workloads** (100 PDFs at once sequentially), but with higher memory and slower single/few-document runs.
+
+For the primary use case of generating tens of PDFs on a single instance with up to a few instances run on a single machine, **PuppeteerSharp** is recommended. It completes in approximately 5.9s using 91MB of RAM, offering the fastest completion while maintaining the best CSS/JS/HTML support. Its RAM usage is in the middle range compared to other solutions.
 
 ---
 
@@ -447,6 +496,20 @@ Ramwise this is right in the middle between 20MB lowest score and 186MB highest 
 | Linux container story | Validate wkhtmltopdf packaging | Common; see guidance above | Possible but brittle | Straightforward |
 | Licensing | Commercial | MIT | MIT (wrapper) + LGPLv3 (engine) | Commercial (CE 5‑page limit) |
 | Performance outcome | Low memory; mid-fast; suitable for simpler/static layouts | Fastest; moderate memory; best fidelity | Mid-fast; similar to NReco; native/temp overhead | Slowest; highest memory; license needed for >5 pages |
+
+# Licensing Summary
+
+This section summarizes the licensing models for the evaluated HTML-to-PDF libraries.
+
+-   **PuppeteerSharp:** MIT License. You are responsible for Chromium/image patching.
+-   **NReco.PdfGenerator:** Commercial license required; verify wkhtmltopdf licensing.
+-   **DinkToPdf:** MIT License for the wrapper + LGPLv3 for the wkhtmltopdf engine.
+-   **SelectPdf:** Commercial license required for production use beyond the 5-page limit of the Community Edition.
+-   **IronPDF:** Commercial license required (per-server / per-app model).
+-   **Syncfusion.HtmlToPdfConverter:** Commercial license required, with a community license available for qualifying individuals/small businesses.
+-   **Spire.PDF:** Commercial license required for full use.
+
+---
 
 # HTML flavor comparison (class vs inline)
 - Inline styles tend to render more consistently on wkhtmltopdf engines.
@@ -570,6 +633,11 @@ dotnet run --project IronPdfExample/IronPdfExample.csproj
 # Syncfusion (community/commercial license)
 dotnet run --project Syncfusion/Syncfusion.csproj
 ```
+
+## Future Work / Roadmap
+- Investigate further performance optimizations for high-concurrency scenarios.
+- Explore additional HTML-to-PDF libraries or alternative approaches (e.g., server-side rendering to image then PDF).
+- Develop a more robust automated testing suite for rendering fidelity across different HTML templates.
 
 ## Notes
 - First-time PuppeteerSharp run may download a compatible Chromium (~100–150 MB). The multi-run script performs a one-time warmup to avoid repeated downloads.
