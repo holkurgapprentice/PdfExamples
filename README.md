@@ -73,12 +73,15 @@ This section provides a quick reference of all HTML-to-PDF libraries evaluated i
 
 ## Quick status matrix
 
-| Project        | Rendering fidelity | Linux container | Server/headless | Performance outcome                             | Decision |
-|----------------|--------------------|-----------------|-----------------|-------------------------------------------------|----------|
-| PuppeteerSharp | ✅                 | ✅              | ✅              | Fastest; moderate memory; best fidelity         | ✅       |
-| NReco          | ⚠️                 | ⚠️              | ✅              | Low memory; mid-fast; good for static layouts   | ⚠️       |
-| DinkToPdf      | ⚠️                 | ❌              | ✅              | Mid-fast; moderate memory; native/temp overhead | ❌       |
-| SelectPdf      | ✅                 | ✅              | ✅              | Slowest; highest memory                         | ⚠️       |
+| Project        | Rendering fidelity                         | Linux/container portability                                   | Server/headless suitability                    | Performance (relative, this repo)                                                | Licensing / limits                                          | Overall decision                               |
+|----------------|--------------------------------------------|----------------------------------------------------------------|-----------------------------------------------|----------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------------------|
+| PuppeteerSharp | ✅ Excellent; closest to real Chrome        | ✅ Common in Debian/Ubuntu images (Chromium + fonts required)  | ✅ Designed for headless/browser automation     | ⚠️ Very fast for tens of PDFs; slower than wkhtmltopdf in 100× tests; ~90 MB RAM | ✅ MIT; you own Chromium/image patching                         | ✅ GO — Recommended default                   |
+| NReco          | ⚠️ Good for static layouts; older WebKit    | ⚠️ Depends on wkhtmltopdf being available in the image        | ✅ Fine for static HTML → PDF                  | ✅ Among fastest; consistently lowest RAM (≈20–30 MB)                             | ⚠️ Commercial; verify wkhtmltopdf licensing                    | ⚠️ CONDITIONAL GO — simple/static layouts     |
+| DinkToPdf      | ⚠️ Same as NReco (wkhtmltopdf)             | ❌ Brittle; manual native libwkhtmltox per OS/arch             | ✅ Works for static HTML                       | ✅ Fastest or tied-fastest in synthetic runs; higher RAM (≈55–65 MB)             | ✅ MIT wrapper + LGPLv3 engine                                 | ❌ NO‑GO — native packaging friction          |
+| SelectPdf      | ✅ Very good; close to Chromium             | ✅ Managed-only; straightforward in containers                 | ✅ Good, but JS execution is slower            | ❌ Slowest overall; highest memory usage                                         | ⚠️ Community: 5‑page limit; commercial license needed for prod | ⚠️ GO (Licensed) / ❌ NO‑GO (Community CE)    |
+| IronPDF        | ✅ Chromium-based; high fidelity            | ⚠️ Managed library but bundles Chromium bits; larger image     | ✅ Built for server-side use                   | ⚠️ Slower than PuppeteerSharp; very high RAM in load tests                        | ⚠️ Commercial license required                                  | ⚠️ CONDITIONAL GO — niche, license-heavy      |
+| Syncfusion     | ✅ Modern HTML5/CSS3 (Blink-based engine)   | ⚠️ Native Blink deps; container story similar to Chromium     | ✅ Server/enterprise-focused                   | ⚠️ Fastest in “100 PDFs at once”; slower in small runs; high RAM                 | ⚠️ Commercial; community license only for some users           | ⚠️ CONDITIONAL GO — strong but heavy/paid     |
+| Spire.Pdf      | ❌ Poor HTML + header/footer support        | ⚠️ Works technically; HTML engine is the blocker              | ⚠️ Usable as generic PDF API only             | ⚠️ Middle of the pack for speed; moderate RAM                                     | ⚠️ Commercial for full use                                     | ❌ NO‑GO for HTML→PDF; PDF API only          |
 
 
 Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
@@ -197,18 +200,91 @@ Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
 
 ---
 
-# Cross‑cutting caveats and mitigations
+# IronPDF (Chromium-based) — NO‑GO
 
-- Fonts and locales
-  - Missing fonts lead to substituted glyphs and visual diffs. Install fonts-liberation, fonts-noto-cjk, and brand fonts as needed.
-- Assets and paths
-  - Use AppContext.BaseDirectory or absolute file: URLs; verify accessibility in containers/servers.
-- Headers/footers
-  - All tools support header/footer with page X/Y; Chromium and SelectPdf offer more modern CSS alignment.
-- Print CSS
-  - Ensure @page margins, print backgrounds, and page breaks are consistently defined.
-- Multi‑page tables
-  - Prefer CSS (break-inside: avoid, etc.) and server‑side preprocessing of complex row badges to maintain layout stability across engines.
+## What
+- Commercial, Chromium-based HTML→PDF library for .NET that ships as a managed package but bundles a headless browser engine under the hood.
+
+## Rendering fidelity
+- High fidelity and broadly comparable to Chromium engines in many layouts.
+- Handles complex tables and modern CSS reasonably well; expect results similar to PuppeteerSharp for most business reports.
+
+## Operational setup
+- Distributed as a NuGet package; simpler than wiring PuppeteerSharp + external Chromium yourself but results in larger binaries/docker images.
+- Requires a license key (trial or commercial) supplied via environment variable (`IRONPDF_LICENSE_KEY`) or configuration.
+
+## Linux/container compatibility
+- Works in Linux containers, but image size and startup footprint are higher because of the bundled engine.
+- You still need to ensure fonts and locales are present (similar to other Chromium/Blink engines).
+
+## Server/headless suitability
+- Designed for server-side use; supports ASP.NET and background services.
+- Concurrency patterns are library-internal; still recommended to cap parallelism at the app layer based on your RAM budget.
+
+## Known limitations/caveats
+- Commercial licensing (per-server / per‑app model) — evaluate cost vs. alternatives.
+- Higher memory usage than PuppeteerSharp and wkhtmltopdf wrappers in the load tests in this repo.
+- Less transparent control over the underlying Chromium than using PuppeteerSharp directly.
+
+## Decision: NO‑GO — Viable if you accept the licensing model and heavier footprint. Prefer PuppeteerSharp when you want direct Chromium control and lower licensing friction.
+
+---
+
+# Syncfusion.HtmlToPdfConverter (Blink-based) — CONDITIONAL GO (Licensed)
+
+## What
+- Part of Syncfusion’s broader PDF/DocIO suite; Blink-based HTML→PDF converter integrated into a rich .NET PDF stack.
+
+## Rendering fidelity
+- Modern HTML5/CSS3 support via Blink; handles complex layouts and print CSS class-based templates well.
+
+## Operational setup
+- Commercial component with a community license for qualifying individuals/small businesses.
+- Requires native Blink dependencies; setup is closer to PuppeteerSharp/Chromium images than to pure managed wrappers.
+
+## Linux/container compatibility
+- Intended to work in Linux containers with proper native libraries and fonts installed.
+- Expect similar considerations to Chromium: image size, `/dev/shm` sizing, and font installation.
+
+## Server/headless suitability
+- Targeted at server/enterprise scenarios (reporting, document services).
+- In this repo’s tests, it shines for **burst workloads** (100 PDFs at once) but is slower and heavier for single/few-document runs.
+
+## Known limitations/caveats
+- Commercial licensing beyond the community tier; check your org’s eligibility.
+- High RAM usage compared to wkhtmltopdf-based tools and even PuppeteerSharp.
+- Vendor-specific APIs; less portable knowledge than raw Chromium automation.
+
+## Decision: CONDITIONAL GO — Strong enterprise option if you are already on Syncfusion or want an integrated PDF stack. Overkill for a lean, single-purpose HTML→PDF service.
+
+---
+
+# Spire.PDF — NO‑GO for HTML→PDF
+
+## What
+- General-purpose .NET PDF library that also offers HTML→PDF conversion via external helper binaries.
+
+## Rendering fidelity
+- Acceptable for basic HTML, but **insufficient for this use case**:
+  - Poor support for header/footer definitions via HTML syntax.
+  - Struggles with more modern CSS/JS and complex, print-oriented layouts.
+
+## Operational setup
+- Ships with a set of native/Qt-based helper binaries (see `plugins/` in this repo).
+- Operationally workable on Windows; Linux/container story would require extra validation.
+
+## Linux/container compatibility
+- Technically possible but not a differentiator; the blocker here is HTML/CSS capability, not ops.
+
+## Server/headless suitability
+- Usable as a generic PDF manipulation API (merge, stamp, etc.).
+- Not suitable as a primary HTML→PDF engine for standardized statement PDFs in this evaluation.
+
+## Known limitations/caveats
+- HTML engine limitations make it impossible to meet the header/footer + multi‑page layout requirements using HTML input alone.
+- You would need to switch to code-first (object) APIs to approximate the layout, which defeats the goal of reusing shared HTML templates.
+
+## Decision: NO‑GO for HTML→PDF — Keep only as a general PDF API (if at all); do not rely on it for the main HTML→PDF pipeline.
 
 ---
 
