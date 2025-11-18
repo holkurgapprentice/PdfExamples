@@ -11,9 +11,17 @@ This document evaluates four approaches to HTML→PDF in .NET and provides a cle
   - NReco (wkhtmltopdf wrapper)
   - DinkToPdf (wkhtmltopdf wrapper)
   - SelectPdf (proprietary engine)
-- Cross‑cutting caveats and mitigations
+  - IronPDF (Chromium-based, commercial)
+  - Syncfusion.HtmlToPdfConverter (Blink-based, commercial)
+  - Spire.PDF (HTML→PDF NO‑GO; PDF API only)
 - Suggested solution ⇒ PuppeteerSharp
 - Performance snapshot
+  - Single run
+  - 10 instances run
+  - 100 instances run
+  - 10 pdfs at one run
+  - 100 pdfs at one run
+  - Performance summary
 - Appendix: Feature comparison
 - How to run locally
 
@@ -60,16 +68,20 @@ This section provides a quick reference of all HTML-to-PDF libraries evaluated i
 
 # Executive summary (Go/No‑Go)
 
-- PuppeteerSharp (Chromium): GO — Recommended
-  - Best fidelity; common in server/headless use; predictable results. Requires Chromium + OS libs, some container tuning. Heavier image and RAM than wkhtmltopdf.
-- NReco (wkhtmltopdf wrapper): CONDITIONAL GO
-  - Go for simpler/static layouts and teams that prefer minimal native work, with awareness of older engine limits. Validate Linux container story (wkhtmltopdf availability and licensing) before production.
-- DinkToPdf (wkhtmltopdf wrapper): NO‑GO (for Linux containers without extra native management)
-  - Requires correct native libwkhtmltox per OS/arch and careful packaging. Works on Windows as provided here, but increases container friction.
-- SelectPdf (proprietary): GO (Licensed) / NO‑GO (Community)
-  - Operationally simple (managed‑only dependencies) and good fidelity, but Community Edition is limited to 5 pages. Requires commercial license for production; note JS execution performance characteristics.
-- Spire.Pdf: NO‑GO (uncapable of proper header / footer managing from HTML syntax)
-  - To support mentioned it should start with c# object approach
+- PuppeteerSharp (Chromium):
+  - High-fidelity, modern-browser rendering with good support for complex layouts and print CSS. Suitable as the primary, long‑term choice for server/container environments when you can accept Chromium setup and footprint.
+- NReco (wkhtmltopdf wrapper):
+  - Appropriate for simpler, largely static documents where you want a lightweight wrapper around wkhtmltopdf and minimal native integration work. Engine is older, so treat it as a fit for stable, non‑evolving layouts.
+- DinkToPdf (wkhtmltopdf wrapper):
+  - Shares the same wkhtmltopdf engine as NReco but adds native library management per OS/architecture, which complicates packaging and deployment across environments.
+- SelectPdf (proprietary):
+  - Commercial proprietary engine with solid HTML/CSS support and a very simple managed‑only deployment story. Community Edition limits documents to 5 pages, so production use effectively requires a paid license.
+- IronPDF (Chromium-based):
+  - Commercial Chromium‑based converter with a managed .NET API. A viable option if you explicitly want a supported commercial Chromium engine and accept licensing/footprint trade‑offs, but not preferred over PuppeteerSharp as a general default.
+- Syncfusion.HtmlToPdfConverter (Blink-based):
+  - Part of a broader commercial PDF/office suite, using a Blink‑based engine. Attractive mainly when you already standardize on Syncfusion or want tight integration with the rest of their PDF stack.
+- Spire.Pdf:
+  - Tested HTML→PDF capabilities do not meet the header/footer and HTML layout requirements for this evaluation. Can be considered only as a general PDF API, not as the primary HTML→PDF engine.
 
 ## Quick status matrix
 
