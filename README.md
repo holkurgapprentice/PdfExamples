@@ -212,7 +212,7 @@ Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
 
 ---
 
-# IronPDF (Chromium-based) — NO‑GO
+# IronPDF (Chromium-based) — CONDITIONAL GO (Licensed)
 
 ## What
 - Commercial, Chromium-based HTML→PDF library for .NET that ships as a managed package but bundles a headless browser engine under the hood.
@@ -238,7 +238,7 @@ Legend: ✅ good/yes • ⚠️ conditional/has caveats • ❌ no-go
 - Higher memory usage than PuppeteerSharp and wkhtmltopdf wrappers in the load tests in this repo.
 - Less transparent control over the underlying Chromium than using PuppeteerSharp directly.
 
-## Decision: NO‑GO — Viable if you accept the licensing model and heavier footprint. Prefer PuppeteerSharp when you want direct Chromium control and lower licensing friction.
+## Decision: CONDITIONAL GO — Viable if you accept the licensing model and heavier footprint. Prefer PuppeteerSharp when you want direct Chromium control and lower licensing friction.
 
 ---
 
