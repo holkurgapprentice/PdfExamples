@@ -3,383 +3,258 @@
 <head>
 <meta charset="utf-8"/>
 <style>
-  @page { size: letter; margin: 250px 40px 140px 40px; }
+	@page { size: letter; margin: 250px 40px 140px 40px; }
+
+	:root {
+		--ink: #0f172a;
+		--muted: #475569;
+		--border: #e2e8f0;
+		--border-subtle: #eef2f7;
+		--header-bg1: #f8fafc;
+		--header-bg2: #f1f5f9;
+		--shadow: rgba(15,23,42,.06);
+		--primary: #0ea5e9;       /* sky-500 */
+		--success: #059669;       /* emerald-600 */
+		--danger: #dc2626;        /* red-600 */
+		--warn: #f59e0b;          /* amber-500 */
+		--warn-bg: #fff7ed;       /* amber-50 */
+		--warn-border: #fed7aa;   /* amber-200 */
+		--info: #1d4ed8;          /* blue-700 */
+	}
+
+	body {
+		font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+		line-height: 1.55;
+		font-size: 12pt;
+		color: var(--ink);
+		margin: 0;
+		padding: 0;
+	}
+
+	h1 {
+		margin: 0 0 14px 0;
+		font-size: 18pt;
+		letter-spacing: .2px;
+		page-break-after: avoid;
+	}
+
+	p {
+		margin: 0 0 10px 0;
+		color: var(--muted);
+		page-break-inside: avoid;
+	}
+
+	.container { padding: 0 4px; }
+
+	/* Notice + tagline */
+	.notice {
+		display: flex; align-items: center; justify-content: center; gap: 10px;
+		padding: 10px 12px; margin: 0 0 12px 0;
+		background: var(--warn-bg);
+		border: 1px solid var(--warn-border);
+		border-radius: 10px;
+		color: #b45309;
+		font-weight: 600;
+		text-align: center;
+		page-break-inside: avoid;
+		page-break-after: avoid;
+	}
+	.notice svg { width: 18px; height: 18px; color: var(--warn); flex: none; }
+
+	.tagline {
+		text-align: center;
+		margin: 6px 0 12px 0;
+		font-size: 13pt;
+		font-weight: 700;
+		letter-spacing: 1px;
+		font-style: italic;
+		background: linear-gradient(90deg, #0ea5e9, #6366f1, #22c55e);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		page-break-after: avoid;
+	}
+
+	/* Table */
+	table {
+		width: 100%;
+		border-collapse: separate;
+		border-spacing: 0;
+		margin: 12px 0 16px 0;
+		border: 1px solid var(--border);
+		border-radius: 10px;
+		overflow: hidden;
+		box-shadow: 0 1px 2px var(--shadow);
+		page-break-inside: auto;
+	}
+	thead {
+		display: table-header-group;
+		break-inside: avoid;
+		page-break-inside: avoid;
+	}
+	tbody {
+		display: table-row-group;
+		page-break-inside: auto;
+	}
+	tbody tr {
+		page-break-inside: avoid;
+		break-inside: avoid;
+	}
+	th, td { padding: 8px 12px; font-size: 10.5pt; }
+	thead th {
+		background: linear-gradient(180deg, var(--header-bg1), var(--header-bg2));
+		border-bottom: 1px solid var(--border);
+		font-weight: 700; text-align: left; color: #334155; letter-spacing: .2px;
+	}
+	tbody td { border-bottom: 1px solid var(--border-subtle); }
+	tbody tr:nth-child(even) { background: #fcfcff; }
+
+	.amount { text-align: right; }
+	.balance { text-align: right; font-weight: 700; color: #0f766e; }
+
+	/* Amount colors by sign (set by JS) */
+	.amount.negative { color: var(--danger); font-weight: 700; }
+	.amount.positive { color: var(--success); font-weight: 700; }
+
+	/* Transaction type badges (type cell wrapped by JS) */
+	td.type .badge {
+		display: inline-block;
+		padding: 4px 10px;
+		border-radius: 9999px;
+		font-weight: 600;
+		border: 1px solid transparent;
+	}
+
+	/* Per-type color themes (row gets class t-*) */
+	tr.t-deposit td.type .badge,
+	tr.t-refund td.type .badge,
+	tr.t-transfer-in td.type .badge {
+		color: #047857; background: #ecfdf5; border-color: #a7f3d0;
+	}
+	tr.t-purchase td.type .badge,
+	tr.t-fee td.type .badge {
+		color: #b91c1c; background: #fef2f2; border-color: #fecaca;
+	}
+	tr.t-atm-withdrawal td.type .badge,
+	tr.t-transfer-out td.type .badge {
+		color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe;
+	}
 </style>
 </head>
-<body style="font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; line-height: 1.55; font-size: 12pt; color: #0f172a; margin: 0; padding: 0;">
-<div style="padding: 0 4px;">
+<body>
+<div class="container">
 
-  <div style="display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 12px; margin:0 0 12px 0; background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; color:#b45309; font-weight:600; text-align:center; page-break-inside:avoid; page-break-after:avoid;">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:18px; height:18px; color:#f59e0b; flex:none;">
-      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-      <line x1="12" y1="9" x2="12" y2="13"></line>
-      <line x1="12" y1="17" x2="12.01" y2="17"></line>
-    </svg>
-    <span>Warning: Please review your transactions carefully. Contact support if anything looks unfamiliar.</span>
-  </div>
+	<!-- Centered warning with yellow icon -->
+	<div class="notice">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+			<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+			<line x1="12" y1="9" x2="12" y2="13"></line>
+			<line x1="12" y1="17" x2="12.01" y2="17"></line>
+		</svg>
+		<span>Warning: Please review your transactions carefully. Contact support if anything looks unfamiliar.</span>
+	</div>
 
-  <h1 style="margin: 0 0 14px 0; font-size: 18pt; letter-spacing: .2px; page-break-after: avoid;">Recent Transactions</h1>
+	<h1>Recent Transactions</h1>
 
-  <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 12px 0 16px 0; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 2px rgba(15,23,42,.06); page-break-inside: auto;">
-    <thead style="display: table-header-group; break-inside: avoid; page-break-inside: avoid;">
-      <tr>
-        <th style="padding: 8px 12px; font-size: 10.5pt; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border-bottom: 1px solid #e2e8f0; font-weight: 700; text-align: left; color: #334155; letter-spacing: .2px;">Date</th>
-        <th style="padding: 8px 12px; font-size: 10.5pt; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border-bottom: 1px solid #e2e8f0; font-weight: 700; text-align: left; color: #334155; letter-spacing: .2px;">Type</th>
-        <th style="padding: 8px 12px; font-size: 10.5pt; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border-bottom: 1px solid #e2e8f0; font-weight: 700; text-align: right; color: #334155; letter-spacing: .2px;">Amount</th>
-        <th style="padding: 8px 12px; font-size: 10.5pt; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border-bottom: 1px solid #e2e8f0; font-weight: 700; text-align: right; color: #0f766e; letter-spacing: .2px;">Balance After</th>
-      </tr>
-    </thead>
-    <tbody style="display: table-row-group; page-break-inside: auto;">
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/01/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Opening Balance</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">4000.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,000.00</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/02/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Deposit</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$500.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,500.00</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/03/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$45.10</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,454.90</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/04/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Transfer In</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$250.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,704.90</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/05/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">ATM Withdrawal</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$100.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,604.90</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/06/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$29.99</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,574.91</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/07/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Refund</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$12.50</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,587.41</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/08/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Fee</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$5.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,582.41</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/09/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$63.75</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,518.66</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/10/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Deposit</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$1,000.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,518.66</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/11/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Transfer Out</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$800.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,718.66</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/12/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$15.20</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,703.46</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/13/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$120.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,583.46</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/14/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Deposit</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$300.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,883.46</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/15/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Fee</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$7.50</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,875.96</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/16/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$42.38</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,833.58</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/17/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">ATM Withdrawal</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$60.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,773.58</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/18/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Refund</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$8.90</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,782.48</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/19/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$95.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$4,687.48</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/20/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Deposit</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$650.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,337.48</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/21/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Transfer Out</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$250.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,087.48</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/22/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$34.75</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,052.73</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/23/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$18.40</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,034.33</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/24/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Fee</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$5.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,029.33</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/25/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Deposit</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$400.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,429.33</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/26/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$72.60</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,356.73</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/27/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Transfer In</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$150.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,506.73</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/28/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Deposit</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$1,200.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$6,706.73</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/29/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$85.90</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$6,620.83</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/30/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$32.15</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$6,588.68</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">10/31/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Fee</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$12.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$6,576.68</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/01/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Transfer Out</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$1,000.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,576.68</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/02/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Refund</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$25.50</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,602.18</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/03/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">ATM Withdrawal</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$120.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,482.18</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/04/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Fee</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$12.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,470.18</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/05/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$64.20</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,405.98</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/06/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$14.99</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,390.99</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/07/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Deposit</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$220.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,610.99</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/08/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Transfer Out</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$300.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,310.99</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/09/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$45.80</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,265.19</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/10/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$23.45</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,241.74</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/11/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Fee</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$5.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,236.74</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/12/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Deposit</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$500.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,736.74</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/13/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$98.10</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,638.64</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/14/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$12.75</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,625.89</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/15/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Transfer In</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$180.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,805.89</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/16/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$75.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,730.89</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/17/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">ATM Withdrawal</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$100.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,630.89</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/18/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Purchase</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">-$40.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,590.89</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/19/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Refund</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$10.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,600.89</td>
-      </tr>
-      <tr style="page-break-inside: avoid; break-inside: avoid;">
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">11/20/2025</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7;">Deposit</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right;">$350.00</td>
-        <td style="padding: 8px 12px; font-size: 10.5pt; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 700; color: #0f766e;">$5,950.89</td>
-      </tr>
-    </tbody>
-  </table>
+	<table>
+		<thead>
+			<tr>
+				<th>Date</th>
+				<th>Type</th>
+				<th class="amount">Amount</th>
+				<th class="balance">Balance After</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr><td>10/01/2025</td><td>Opening Balance</td><td class='amount'>4000.00</td><td class='balance'>$4,000.00</td></tr>
+<tr><td>10/02/2025</td><td>Deposit</td><td class='amount'>$500.00</td><td class='balance'>$4,500.00</td></tr>
+<tr><td>10/03/2025</td><td>Purchase</td><td class='amount'>-$45.10</td><td class='balance'>$4,454.90</td></tr>
+<tr><td>10/04/2025</td><td>Transfer In</td><td class='amount'>$250.00</td><td class='balance'>$4,704.90</td></tr>
+<tr><td>10/05/2025</td><td>ATM Withdrawal</td><td class='amount'>-$100.00</td><td class='balance'>$4,604.90</td></tr>
+<tr><td>10/06/2025</td><td>Purchase</td><td class='amount'>-$29.99</td><td class='balance'>$4,574.91</td></tr>
+<tr><td>10/07/2025</td><td>Refund</td><td class='amount'>$12.50</td><td class='balance'>$4,587.41</td></tr>
+<tr><td>10/08/2025</td><td>Fee</td><td class='amount'>-$5.00</td><td class='balance'>$4,582.41</td></tr>
+<tr><td>10/09/2025</td><td>Purchase</td><td class='amount'>-$63.75</td><td class='balance'>$4,518.66</td></tr>
+<tr><td>10/10/2025</td><td>Deposit</td><td class='amount'>$1,000.00</td><td class='balance'>$5,518.66</td></tr>
+<tr><td>10/11/2025</td><td>Transfer Out</td><td class='amount'>-$800.00</td><td class='balance'>$4,718.66</td></tr>
+<tr><td>10/12/2025</td><td>Purchase</td><td class='amount'>-$15.20</td><td class='balance'>$4,703.46</td></tr>
+<tr><td>10/13/2025</td><td>Purchase</td><td class='amount'>-$120.00</td><td class='balance'>$4,583.46</td></tr>
+<tr><td>10/14/2025</td><td>Deposit</td><td class='amount'>$300.00</td><td class='balance'>$4,883.46</td></tr>
+<tr><td>10/15/2025</td><td>Fee</td><td class='amount'>-$7.50</td><td class='balance'>$4,875.96</td></tr>
+<tr><td>10/16/2025</td><td>Purchase</td><td class='amount'>-$42.38</td><td class='balance'>$4,833.58</td></tr>
+<tr><td>10/17/2025</td><td>ATM Withdrawal</td><td class='amount'>-$60.00</td><td class='balance'>$4,773.58</td></tr>
+<tr><td>10/18/2025</td><td>Refund</td><td class='amount'>$8.90</td><td class='balance'>$4,782.48</td></tr>
+<tr><td>10/19/2025</td><td>Purchase</td><td class='amount'>-$95.00</td><td class='balance'>$4,687.48</td></tr>
+<tr><td>10/20/2025</td><td>Deposit</td><td class='amount'>$650.00</td><td class='balance'>$5,337.48</td></tr>
+<tr><td>10/21/2025</td><td>Transfer Out</td><td class='amount'>-$250.00</td><td class='balance'>$5,087.48</td></tr>
+<tr><td>10/22/2025</td><td>Purchase</td><td class='amount'>-$34.75</td><td class='balance'>$5,052.73</td></tr>
+<tr><td>10/23/2025</td><td>Purchase</td><td class='amount'>-$18.40</td><td class='balance'>$5,034.33</td></tr>
+<tr><td>10/24/2025</td><td>Fee</td><td class='amount'>-$5.00</td><td class='balance'>$5,029.33</td></tr>
+<tr><td>10/25/2025</td><td>Deposit</td><td class='amount'>$400.00</td><td class='balance'>$5,429.33</td></tr>
+<tr><td>10/26/2025</td><td>Purchase</td><td class='amount'>-$72.60</td><td class='balance'>$5,356.73</td></tr>
+<tr><td>10/27/2025</td><td>Transfer In</td><td class='amount'>$150.00</td><td class='balance'>$5,506.73</td></tr>
+<tr><td>10/28/2025</td><td>Deposit</td><td class='amount'>$1,200.00</td><td class='balance'>$6,706.73</td></tr>
+<tr><td>10/29/2025</td><td>Purchase</td><td class='amount'>-$85.90</td><td class='balance'>$6,620.83</td></tr>
+<tr><td>10/30/2025</td><td>Purchase</td><td class='amount'>-$32.15</td><td class='balance'>$6,588.68</td></tr>
+<tr><td>10/31/2025</td><td>Fee</td><td class='amount'>-$12.00</td><td class='balance'>$6,576.68</td></tr>
+<tr><td>11/01/2025</td><td>Transfer Out</td><td class='amount'>-$1,000.00</td><td class='balance'>$5,576.68</td></tr>
+<tr><td>11/02/2025</td><td>Refund</td><td class='amount'>$25.50</td><td class='balance'>$5,602.18</td></tr>
+<tr><td>11/03/2025</td><td>ATM Withdrawal</td><td class='amount'>-$120.00</td><td class='balance'>$5,482.18</td></tr>
+<tr><td>11/04/2025</td><td>Fee</td><td class='amount'>-$12.00</td><td class='balance'>$5,470.18</td></tr>
+<tr><td>11/05/2025</td><td>Purchase</td><td class='amount'>-$64.20</td><td class='balance'>$5,405.98</td></tr>
+<tr><td>11/06/2025</td><td>Purchase</td><td class='amount'>-$14.99</td><td class='balance'>$5,390.99</td></tr>
+<tr><td>11/07/2025</td><td>Deposit</td><td class='amount'>$220.00</td><td class='balance'>$5,610.99</td></tr>
+<tr><td>11/08/2025</td><td>Transfer Out</td><td class='amount'>-$300.00</td><td class='balance'>$5,310.99</td></tr>
+<tr><td>11/09/2025</td><td>Purchase</td><td class='amount'>-$45.80</td><td class='balance'>$5,265.19</td></tr>
+<tr><td>11/10/2025</td><td>Purchase</td><td class='amount'>-$23.45</td><td class='balance'>$5,241.74</td></tr>
+<tr><td>11/11/2025</td><td>Fee</td><td class='amount'>-$5.00</td><td class='balance'>$5,236.74</td></tr>
+<tr><td>11/12/2025</td><td>Deposit</td><td class='amount'>$500.00</td><td class='balance'>$5,736.74</td></tr>
+<tr><td>11/13/2025</td><td>Purchase</td><td class='amount'>-$98.10</td><td class='balance'>$5,638.64</td></tr>
+<tr><td>11/14/2025</td><td>Purchase</td><td class='amount'>-$12.75</td><td class='balance'>$5,625.89</td></tr>
+<tr><td>11/15/2025</td><td>Transfer In</td><td class='amount'>$180.00</td><td class='balance'>$5,805.89</td></tr>
+<tr><td>11/16/2025</td><td>Purchase</td><td class='amount'>-$75.00</td><td class='balance'>$5,730.89</td></tr>
+<tr><td>11/17/2025</td><td>ATM Withdrawal</td><td class='amount'>-$100.00</td><td class='balance'>$5,630.89</td></tr>
+<tr><td>11/18/2025</td><td>Purchase</td><td class='amount'>-$40.00</td><td class='balance'>$5,590.89</td></tr>
+<tr><td>11/19/2025</td><td>Refund</td><td class='amount'>$10.00</td><td class='balance'>$5,600.89</td></tr>
+<tr><td>11/20/2025</td><td>Deposit</td><td class='amount'>$350.00</td><td class='balance'>$5,950.89</td></tr>
 
-  <p style="margin: 0 0 10px 0; color: #475569; page-break-inside: avoid;">These transactions reflect activity on your account over the recent period. Please review and contact support if any item appears unfamiliar or inaccurate. Credits increase your balance while debits reduce it.</p>
-  <p style="margin: 0 0 10px 0; color: #475569; page-break-inside: avoid;"><strong>You still have $3,245.18 of available balance.</strong></p>
+		</tbody>
+	</table>
+
+	<p>These transactions reflect activity on your account over the recent period. Please review and contact support if any item appears unfamiliar or inaccurate. Credits increase your balance while debits reduce it.</p>
+	<p><strong>You still have $3,245.18 of available balance.</strong></p>
 
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('tbody tr').forEach(function (tr, idx) {
-    var tcell = tr.children[1];
-    var acell = tr.children[2];
+	// Enhance rows: add classes to colorize types and amounts, and wrap type text in a pill badge.
+	document.addEventListener('DOMContentLoaded', function () {
+		document.querySelectorAll('tbody tr').forEach(function (tr) {
+			var tcell = tr.children[1];
+			var acell = tr.querySelector('.amount');
 
-    if ((idx + 1) % 2 === 0) {
-      tr.style.background = '#fcfcff';
-    }
+			if (tcell) {
+				var type = (tcell.textContent || '').trim().toLowerCase();
+				var normalized = type.replace(/\s+/g, '-');
+				tr.classList.add('t-' + normalized);
+				tcell.classList.add('type');
 
-    if (tcell) {
-      var text = (tcell.textContent || '').trim();
-      tcell.textContent = '';
-      var span = document.createElement('span');
-      span.textContent = text;
-      span.setAttribute('style', 'display:inline-block;padding:4px 10px;border-radius:9999px;font-weight:600;border:1px solid transparent;');
-      var lower = text.toLowerCase();
-      if (lower === 'deposit' || lower === 'refund' || lower === 'transfer in' || lower === 'transfer-in') {
-        span.style.color = '#047857'; span.style.background = '#ecfdf5'; span.style.borderColor = '#a7f3d0';
-      } else if (lower === 'purchase' || lower === 'fee') {
-        span.style.color = '#b91c1c'; span.style.background = '#fef2f2'; span.style.borderColor = '#fecaca';
-      } else if (lower === 'atm withdrawal' || lower === 'atm-withdrawal' || lower === 'transfer out' || lower === 'transfer-out') {
-        span.style.color = '#1d4ed8'; span.style.background = '#eff6ff'; span.style.borderColor = '#bfdbfe';
-      }
-      tcell.appendChild(span);
-    }
+				// Wrap type in badge
+				var text = (tcell.textContent || '').trim();
+				tcell.textContent = '';
+				var span = document.createElement('span');
+				span.className = 'badge';
+				span.textContent = text;
+				tcell.appendChild(span);
+			}
 
-    if (acell) {
-      var txt = (acell.textContent || '').trim();
-      var isNegative = txt.startsWith('-');
-      acell.style.fontWeight = '700';
-      acell.style.textAlign = 'right';
-      acell.style.color = isNegative ? '#dc2626' : '#059669';
-    }
-  });
-});
+			if (acell) {
+				var txt = (acell.textContent || '').trim();
+				var isNegative = txt.startsWith('-');
+				acell.classList.add(isNegative ? 'negative' : 'positive');
+			}
+		});
+	});
 </script>
 
 </body>
